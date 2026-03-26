@@ -13,14 +13,23 @@ const QUICK_BITES = [
 
 const HomePage = () => {
   const navigate = useNavigate()
-  const { dispatch } = useCart()
+  const { items, dispatch } = useCart()
 
-  const addQuickBite = (item) => {
-    dispatch({
-      type: 'ADD_ITEM',
-      payload: { id: `qb-${item.name}`, name: item.name, price: item.price },
-    })
-  }
+  // Stable id for quick-bite items
+  const qbId = (item) => `qb-${item.name}`
+
+  // How many of this item are in the cart already
+  const cartQty = (item) => items.find(i => i.id === qbId(item))?.quantity ?? 0
+
+  const addOne = (item) => dispatch({
+    type: 'ADD_ITEM',
+    payload: { id: qbId(item), name: item.name, price: item.price },
+  })
+
+  const removeOne = (item) => dispatch({
+    type: 'UPDATE_QTY',
+    payload: { id: qbId(item), qty: cartQty(item) - 1 },
+  })
 
   return (
     <div className="min-h-screen pb-32 bg-background font-body text-on-background bg-dot-pattern">
@@ -63,25 +72,48 @@ const HomePage = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {QUICK_BITES.map((item) => (
-            <div key={item.name} className="bg-surface-bright border-[3px] border-outline brutal-shadow flex flex-col">
-              <div className="h-32 md:h-40 border-b-[3px] border-outline overflow-hidden">
-                <img alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src={item.img}/>
-              </div>
-              <div className="p-3 md:p-4 flex flex-col flex-grow">
-                <h4 className="font-headline font-bold text-base uppercase leading-tight mb-1">{item.name}</h4>
-                <span className="font-body text-sm font-bold text-primary mb-3">${item.price.toFixed(2)}</span>
-                <div className="mt-auto flex justify-end">
-                  <button
-                    onClick={() => addQuickBite(item)}
-                    className="bg-secondary p-2 border-2 border-outline brutal-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all active:translate-x-[2px] active:translate-y-[2px]"
-                  >
-                    <span className="material-symbols-outlined text-on-secondary font-bold">add</span>
-                  </button>
+          {QUICK_BITES.map((item) => {
+            const qty = cartQty(item)
+            return (
+              <div key={item.name} className="bg-surface-bright border-[3px] border-outline brutal-shadow flex flex-col">
+                <div className="h-32 md:h-40 border-b-[3px] border-outline overflow-hidden">
+                  <img alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src={item.img}/>
+                </div>
+                <div className="p-3 md:p-4 flex flex-col flex-grow">
+                  <h4 className="font-headline font-bold text-base uppercase leading-tight mb-1">{item.name}</h4>
+                  <span className="font-body text-sm font-bold text-primary mb-3">${item.price.toFixed(2)}</span>
+                  <div className="mt-auto flex justify-end">
+                    {qty === 0 ? (
+                      /* Plain + button — item not in cart yet */
+                      <button
+                        onClick={() => addOne(item)}
+                        className="bg-secondary p-2 border-2 border-outline brutal-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all active:translate-x-[2px] active:translate-y-[2px]"
+                      >
+                        <span className="material-symbols-outlined text-on-secondary font-bold">add</span>
+                      </button>
+                    ) : (
+                      /* Inline counter — shows current qty with − and + */
+                      <div className="flex items-center border-[2px] border-outline bg-secondary brutal-shadow-sm">
+                        <button
+                          onClick={() => removeOne(item)}
+                          className="px-2 py-1 border-r-[2px] border-outline hover:bg-secondary/70 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-on-secondary text-sm font-bold">remove</span>
+                        </button>
+                        <span className="px-3 font-headline font-black text-sm text-on-secondary min-w-[1.5rem] text-center">{qty}</span>
+                        <button
+                          onClick={() => addOne(item)}
+                          className="px-2 py-1 border-l-[2px] border-outline hover:bg-secondary/70 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-on-secondary text-sm font-bold">add</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         <section className="mt-12 text-center">

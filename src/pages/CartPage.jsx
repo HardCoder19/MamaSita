@@ -73,9 +73,8 @@ const CartPage = () => {
             </div>
 
             {/* Order summary */}
-            <div className="mt-10 bg-surface-bright border-[3px] border-outline brutal-shadow p-6 relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary rounded-full opacity-20 border-[3px] border-outline"></div>
-              <h3 className="font-headline font-bold text-xl uppercase mb-6 relative z-10">ORDER SUMMARY</h3>
+            <div className="mt-10 bg-surface-bright border-[3px] border-outline brutal-shadow p-6">
+              <h3 className="font-headline font-bold text-xl uppercase mb-6">ORDER SUMMARY</h3>
               <div className="space-y-3 relative z-10">
                 <div className="flex justify-between text-sm font-medium">
                   <span>Subtotal</span>
