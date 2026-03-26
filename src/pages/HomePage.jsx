@@ -41,7 +41,7 @@ const HomePage = () => {
             className="relative bg-primary border-[3px] border-outline brutal-shadow p-6 overflow-hidden group cursor-pointer"
             onClick={() => navigate('/build-base')}
           >
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-20 rounded-full"></div>
+
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
               <div className="flex-1">
                 <span className="inline-block bg-secondary text-on-secondary px-3 py-1 font-label font-bold text-xs uppercase mb-3 border-2 border-outline rotated-label brutal-shadow-sm">
