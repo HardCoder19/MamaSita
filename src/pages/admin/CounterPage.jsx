@@ -203,8 +203,9 @@ export default function CounterPage() {
   const [orders,      setOrders]      = useState([])
   const [loading,     setLoading]     = useState(true)
   const [filter,      setFilter]      = useState('ALL')
-  const [modalOrder,  setModalOrder]  = useState(undefined) // undefined=closed, null=new, order=edit
-  const [confirmDel,  setConfirmDel]  = useState(null)      // order id to delete
+  const [search,      setSearch]      = useState('')
+  const [modalOrder,  setModalOrder]  = useState(undefined)
+  const [confirmDel,  setConfirmDel]  = useState(null)
 
   const load = useCallback(async () => {
     const { orders, error } = await getAdminOrders()
@@ -218,9 +219,19 @@ export default function CounterPage() {
     return () => clearInterval(interval)
   }, [load])
 
-  const filteredOrders = filter === 'ALL'
+  const byStatus = filter === 'ALL'
     ? orders
     : orders.filter(o => o.status.toUpperCase() === filter)
+
+  const filteredOrders = search.trim()
+    ? byStatus.filter(o => {
+        const q = search.toLowerCase()
+        return (
+          (o.customers?.name  ?? '').toLowerCase().includes(q) ||
+          (o.customers?.email ?? '').toLowerCase().includes(q)
+        )
+      })
+    : byStatus
 
   const todayOrders  = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString())
   const todayRevenue = todayOrders.reduce((s, o) => s + (o.total || 0), 0)
@@ -258,25 +269,46 @@ export default function CounterPage() {
         ))}
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 p-4 overflow-x-auto border-b border-slate-700">
-        {FILTERS.map(f => (
+      {/* Filter tabs + Search */}
+      <div className="border-b border-slate-700">
+        <div className="flex gap-2 px-4 pt-4 pb-2 overflow-x-auto">
+          {FILTERS.map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
+                filter === f ? 'bg-orange-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
           <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
-              filter === f ? 'bg-orange-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
+            onClick={load}
+            className="ml-auto px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-700 text-slate-300 hover:bg-slate-600 whitespace-nowrap"
           >
-            {f}
+            ↻ Refresh
           </button>
-        ))}
-        <button
-          onClick={load}
-          className="ml-auto px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-700 text-slate-300 hover:bg-slate-600 whitespace-nowrap"
-        >
-          ↻ Refresh
-        </button>
+        </div>
+        {/* Search */}
+        <div className="px-4 pb-3">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by name or email…"
+              className="w-full bg-slate-700 border border-slate-600 text-white pl-8 pr-4 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-orange-500 placeholder:text-slate-500"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-sm"
+              >×</button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Orders */}

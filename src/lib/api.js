@@ -4,7 +4,7 @@ const TAX_RATE = 0.08
 
 // ─── Customer-side API ────────────────────────────────────────────────────────
 
-export async function createOrder(customerInfo, cartItems) {
+export async function createOrder(customerInfo, cartItems, paymentMethod = 'card') {
   console.log('[createOrder] starting with', customerInfo, cartItems)
 
   const { data: customer, error: custErr } = await supabase
@@ -19,14 +19,16 @@ export async function createOrder(customerInfo, cartItems) {
   const tax      = parseFloat((subtotal * TAX_RATE).toFixed(2))
   const total    = parseFloat((subtotal + tax).toFixed(2))
 
+  const isPaid    = paymentMethod === 'card'
+
   const { data: order, error: orderErr } = await supabase
     .from('orders')
     .insert({
       customer_id:    customer.id,
       subtotal, tax, total,
-      payment_method: 'card',      // online orders are card/at-collection
-      payment_status: 'paid',      // committed by placing the order → auto-confirmed
-      status:         'confirmed', // goes straight into cook queue
+      payment_method: paymentMethod,
+      payment_status: isPaid ? 'paid'      : 'pending',
+      status:         isPaid ? 'confirmed' : 'pending', // cash = needs counter auth
     })
     .select()
     .single()

@@ -9,6 +9,7 @@ const CheckoutPage = () => {
   const { items, total, dispatch } = useCart()
 
   const [form, setForm] = useState({ name: '', email: '' })
+  const [paymentMethod, setPaymentMethod] = useState('card') // 'card' | 'cash'
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [dbStatus, setDbStatus] = useState(null) // null | 'ok' | 'error: <msg>'
@@ -30,7 +31,7 @@ const CheckoutPage = () => {
     setLoading(true)
     setError(null)
 
-    const { order, error: apiErr } = await createOrder(form, items)
+    const { order, error: apiErr } = await createOrder(form, items, paymentMethod)
     setLoading(false)
 
     if (apiErr) {
@@ -114,18 +115,44 @@ const CheckoutPage = () => {
             <span className="bg-primary text-white font-display text-xl w-8 h-8 flex items-center justify-center border-[3px] border-outline brutal-shadow">2</span>
             <h3 className="font-headline font-black text-2xl uppercase italic">PAYMENT</h3>
           </div>
-          <div className="bg-secondary border-[3px] border-outline p-5 brutal-shadow flex items-center justify-between -rotate-1">
-            <div className="flex items-center gap-4">
-              <span className="material-symbols-outlined text-4xl">credit_card</span>
-              <div>
-                <p className="font-headline font-black text-lg leading-tight uppercase">Pay on Collection</p>
-                <p className="font-body text-xs font-bold opacity-70">Cash or Card at Counter</p>
-              </div>
-            </div>
-            <div className="w-8 h-8 rounded-full border-[3px] border-outline bg-white flex items-center justify-center">
-              <div className="w-4 h-4 bg-primary border-[2px] border-outline"></div>
-            </div>
+          {/* Cash/Card toggle */}
+          <div className="flex gap-3">
+            {['card', 'cash'].map(method => (
+              <button
+                key={method}
+                onClick={() => setPaymentMethod(method)}
+                className={`flex-1 border-[3px] border-outline p-4 brutal-shadow flex items-center gap-3 transition-all ${
+                  paymentMethod === method
+                    ? 'bg-primary text-white -translate-x-[2px] -translate-y-[2px] shadow-none'
+                    : 'bg-surface-bright hover:bg-surface'
+                }`}
+              >
+                <span className="material-symbols-outlined text-2xl">
+                  {method === 'card' ? 'credit_card' : 'payments'}
+                </span>
+                <div className="text-left">
+                  <p className="font-headline font-black text-sm uppercase leading-tight">
+                    {method === 'card' ? 'Card / Online' : 'Cash'}
+                  </p>
+                  <p className={`font-body text-xs font-bold leading-tight ${
+                    paymentMethod === method ? 'opacity-80' : 'opacity-50'
+                  }`}>
+                    {method === 'card' ? 'Pay at counter by card' : 'Pay cash at pickup'}
+                  </p>
+                </div>
+                <div className={`ml-auto w-5 h-5 rounded-full border-[3px] border-outline flex items-center justify-center ${
+                  paymentMethod === method ? 'bg-white' : 'bg-transparent'
+                }`}>
+                  {paymentMethod === method && <div className="w-2.5 h-2.5 bg-primary rounded-full"></div>}
+                </div>
+              </button>
+            ))}
           </div>
+          {paymentMethod === 'cash' && (
+            <p className="text-xs font-bold text-amber-700 bg-amber-50 border-[2px] border-amber-300 p-3 mt-3">
+              ⚠ Cash orders require staff authorization at the counter before cooking starts.
+            </p>
+          )}
         </section>
 
         {/* Order summary */}
