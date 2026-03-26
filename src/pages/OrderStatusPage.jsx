@@ -108,7 +108,7 @@ const OrderStatusPage = () => {
               {!loading && (
                 <p className="text-xs text-slate-400 font-mono flex items-center justify-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse inline-block"></span>
-                  Live updates every 8 seconds
+                  Live
                 </p>
               )}
             </div>

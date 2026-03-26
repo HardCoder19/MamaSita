@@ -35,7 +35,7 @@ export default function CookPage() {
 
   useEffect(() => {
     load()
-    const interval = setInterval(load, 10_000)
+    const interval = setInterval(load, 8_000)
     return () => clearInterval(interval)
   }, [load])
 

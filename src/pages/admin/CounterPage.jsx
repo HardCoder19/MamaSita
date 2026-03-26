@@ -215,7 +215,7 @@ export default function CounterPage() {
 
   useEffect(() => {
     load()
-    const interval = setInterval(load, 15_000)
+    const interval = setInterval(load, 8_000)
     return () => clearInterval(interval)
   }, [load])
 
