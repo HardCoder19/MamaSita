@@ -61,7 +61,10 @@ const BuildBasePage = () => {
 
       <BuildNextButton
         label="NEXT: PROTEIN"
-        onClick={() => navigate('/build-protein', { state: { base: bases[selected] } })}
+        onClick={() => {
+          const { badge, ...safeBase } = bases[selected]
+          navigate('/build-protein', { state: { base: safeBase } })
+        }}
       />
       <BottomNav active="BUILD" />
     </div>
