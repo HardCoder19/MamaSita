@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import HomePage from './pages/HomePage'
 import BuildBasePage from './pages/BuildBasePage'
 import BuildProteinPage from './pages/BuildProteinPage'
@@ -23,6 +24,7 @@ function App() {
         <Route path="/order-status" element={<OrderStatusPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
+      <Analytics />
     </BrowserRouter>
   )
 }
