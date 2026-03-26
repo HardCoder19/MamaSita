@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TopAppBar from '../components/TopAppBar'
 import { useCart } from '../context/CartContext'
-import { createOrder } from '../lib/api'
+import { createOrder, testConnection } from '../lib/api'
 
 const CheckoutPage = () => {
   const navigate = useNavigate()
@@ -11,6 +11,14 @@ const CheckoutPage = () => {
   const [form, setForm] = useState({ name: '', email: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [dbStatus, setDbStatus] = useState(null) // null | 'ok' | 'error: <msg>'
+
+  // Test DB connection on mount so we catch issues early
+  useEffect(() => {
+    testConnection().then(({ ok, message }) => {
+      setDbStatus(ok ? 'ok' : `DB error: ${message}`)
+    })
+  }, [])
 
   const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
 
@@ -21,12 +29,15 @@ const CheckoutPage = () => {
     }
     setLoading(true)
     setError(null)
+
     const { order, error: apiErr } = await createOrder(form, items)
     setLoading(false)
 
     if (apiErr) {
-      setError('Something went wrong. Please try again.')
-      console.error(apiErr)
+      // Show the actual Supabase error so we can diagnose
+      const msg = apiErr.message || apiErr.details || apiErr.code || JSON.stringify(apiErr)
+      setError(`Order failed: ${msg}`)
+      console.error('[Checkout] API error:', apiErr)
       return
     }
 
@@ -46,6 +57,17 @@ const CheckoutPage = () => {
             </span>
           </div>
         </div>
+
+        {/* DB connection warning — shows if schema not run */}
+        {dbStatus && dbStatus !== 'ok' && (
+          <div className="mb-6 p-4 bg-red-100 border-[3px] border-red-500 brutal-shadow">
+            <p className="font-headline font-bold text-sm text-red-700 uppercase">⚠️ Database not connected</p>
+            <p className="font-body text-xs text-red-600 mt-1">{dbStatus}</p>
+            <p className="font-body text-xs text-red-600 mt-1">
+              Did you run <code className="bg-red-200 px-1">supabase/schema.sql</code> in your Supabase SQL Editor?
+            </p>
+          </div>
+        )}
 
         {/* Step 1 — Your Details */}
         <section className="mb-12">
@@ -77,8 +99,12 @@ const CheckoutPage = () => {
               />
             </div>
           </div>
+
+          {/* Error — shows the real Supabase message */}
           {error && (
-            <p className="mt-3 text-error font-bold text-sm font-headline uppercase">{error}</p>
+            <div className="mt-4 p-3 bg-red-50 border-[3px] border-red-400">
+              <p className="font-headline font-bold text-sm text-red-700 uppercase leading-tight">{error}</p>
+            </div>
           )}
         </section>
 
@@ -108,7 +134,7 @@ const CheckoutPage = () => {
           <div className="space-y-2 font-body font-bold text-sm">
             {items.map((item) => (
               <div key={item.id} className="flex justify-between">
-                <span>{item.name} {item.quantity > 1 ? `x${item.quantity}` : ''}</span>
+                <span>{item.name} {item.quantity > 1 ? `×${item.quantity}` : ''}</span>
                 <span>${(item.price * item.quantity).toFixed(2)}</span>
               </div>
             ))}
@@ -123,7 +149,7 @@ const CheckoutPage = () => {
       <div className="fixed bottom-0 left-0 w-full p-6 bg-surface-bright/80 backdrop-blur-md border-t-[3px] border-outline z-[60]">
         <button
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={loading || (dbStatus && dbStatus !== 'ok')}
           className="w-full bg-[#ef5b06] text-white py-5 px-8 brutal-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-between group active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <span className="font-display text-2xl uppercase tracking-wider">
