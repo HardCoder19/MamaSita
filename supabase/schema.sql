@@ -84,3 +84,36 @@ create policy "anon_read_orders"       on orders      for select to anon using (
 create policy "anon_insert_order_items" on order_items for insert to anon with check (true);
 create policy "anon_read_order_items"  on order_items  for select to anon using (true);
 
+
+-- ============================================================
+-- ADMIN MIGRATION — run once after initial schema is live
+-- Adds payment fields and authenticated-role RLS
+-- ============================================================
+
+-- New columns on orders (safe to run multiple times)
+alter table orders
+  add column if not exists payment_method text default 'cash',
+  add column if not exists payment_status text default 'pending';
+
+-- authenticated users (staff) can UPDATE orders (status changes, authorization)
+drop policy if exists "auth_update_orders"      on orders;
+drop policy if exists "auth_delete_orders"      on orders;
+drop policy if exists "auth_read_orders"        on orders;
+drop policy if exists "auth_insert_orders"      on orders;
+drop policy if exists "auth_insert_customers"   on customers;
+drop policy if exists "auth_read_customers"     on customers;
+drop policy if exists "auth_insert_order_items" on order_items;
+drop policy if exists "auth_read_order_items"   on order_items;
+
+create policy "auth_update_orders"      on orders      for update    to authenticated using (true) with check (true);
+create policy "auth_delete_orders"      on orders      for delete    to authenticated using (true);
+create policy "auth_read_orders"        on orders      for select    to authenticated using (true);
+create policy "auth_insert_orders"      on orders      for insert    to authenticated with check (true);
+create policy "auth_insert_customers"   on customers   for insert    to authenticated with check (true);
+create policy "auth_read_customers"     on customers   for select    to authenticated using (true);
+create policy "auth_insert_order_items" on order_items for insert    to authenticated with check (true);
+create policy "auth_read_order_items"   on order_items for select    to authenticated using (true);
+
+-- NOTE: After running this, go to Supabase Dashboard → Authentication → Users
+-- and create a staff account e.g. staff@mamasita.com with a secure password.
+-- That account is used to log into /admin in the web app.
