@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>MAMASITA - The Urban Cantina Prototype</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ef5b06",
+                        "surface-container-lowest": "#FFFFFF",
+                        "on-primary-fixed": "#370e00",
+                        "tertiary": "#FFD166",
+                        "surface-tint": "#ef5b06",
+                        "surface-container-highest": "#211A16",
+                        "on-background": "#211A16",
+                        "on-secondary-fixed": "#211A16",
+                        "inverse-primary": "#ffb598",
+                        "on-primary-fixed-variant": "#7e2c00",
+                        "secondary-fixed": "#00E5FF",
+                        "inverse-on-surface": "#FFFDF7",
+                        "tertiary-fixed-dim": "#ffb598",
+                        "outline": "#211A16",
+                        "on-tertiary-fixed-variant": "#79300d",
+                        "on-secondary-fixed-variant": "#211A16",
+                        "surface-bright": "#FFFDF7",
+                        "error-dim": "#9f0519",
+                        "surface": "#FFD166",
+                        "tertiary-container": "#D9B455",
+                        "on-tertiary-container": "#211A16",
+                        "primary-fixed": "#ffdbce",
+                        "secondary-container": "#00E5FF",
+                        "on-surface": "#211A16",
+                        "primary-dim": "#8d3200",
+                        "secondary": "#00E5FF",
+                        "inverse-surface": "#211A16",
+                        "on-primary-container": "#ffffff",
+                        "surface-container": "#FFD166",
+                        "on-tertiary-fixed": "#370e00",
+                        "background": "#FFD166",
+                        "secondary-fixed-dim": "#00E5FF",
+                        "on-surface-variant": "#5a4137",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#FFFDF7",
+                        "surface-variant": "#FFFDF7",
+                        "outline-variant": "#D9B455",
+                        "surface-container-high": "#F8F6f5",
+                        "on-secondary": "#211A16",
+                        "tertiary-fixed": "#ffdbce",
+                        "primary-fixed-dim": "#ffb598",
+                        "secondary-dim": "#823c00",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#ef5b06",
+                        "on-tertiary": "#211A16",
+                        "on-secondary-container": "#211A16",
+                        "tertiary-dim": "#6e4800",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#D9B455",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Space Grotesk"],
+                        "display": ["Lilita One"],
+                        "brand": ["Lilita One"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+    
+    <style>
+        .brutal-shadow { box-shadow: 4px 4px 0px #211A16; }
+        .brutal-shadow-sm { box-shadow: 2px 2px 0px #211A16; }
+        .brutal-shadow-reverse { box-shadow: 0 -4px 0 0 #211A16; }
+        .bg-dot-pattern {
+            background-image: radial-gradient(#D9B455 1px, transparent 1px);
+            background-size: 16px 16px;
+        }
+        .rotated-label { transform: rotate(-2deg); }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neo-shadow { box-shadow: 4px 4px 0px #211A16; }
+        .neo-shadow-sm { box-shadow: 2px 2px 0px #211A16; }
+        .neo-brutal-shadow { box-shadow: 4px 4px 0px #211A16; }
+        .neo-brutal-shadow-sm { box-shadow: 2px 2px 0px #211A16; }
+        
+        body {
+            min-height: 100vh;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-background bg-dot-pattern">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
+
+        // --- Shared Components ---
+
+        const TopAppBar = ({ title = "MAMASITA", showBack = false, backTo = "/" }) => {
+            const navigate = useNavigate();
+            return (
+                <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#FFD166] dark:bg-[#211A16] border-b-[3px] border-[#211A16] shadow-[4px_4px_0px_#211A16]">
+                    <div className="flex items-center gap-4">
+                        {showBack ? (
+                            <button onClick={() => navigate(backTo)} className="hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">
+                                <span className="material-symbols-outlined text-[#211A16] dark:text-[#FFFDF7] text-2xl" data-icon="arrow_back">arrow_back</span>
+                            </button>
+                        ) : (
+                            <button className="hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">
+                                <span className="material-symbols-outlined text-[#211A16] dark:text-[#FFFDF7] text-2xl" data-icon="menu">menu</span>
+                            </button>
+                        )}
+                        {showBack && <h1 className="font-headline uppercase tracking-tighter text-2xl font-black text-[#211A16] italic hidden sm:block">MAMASITA</h1>}
+                    </div>
+                    {!showBack && <h1 className="text-2xl font-brand uppercase text-[#211A16] dark:text-[#FFD166] tracking-widest">MAMASITA</h1>}
+                    {showBack && <div className="text-2xl font-brand uppercase text-[#211A16] dark:text-[#FFD166] tracking-widest sm:hidden">MAMASITA</div>}
+                    
+                    <button className="hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">
+                        <span className="material-symbols-outlined text-[#211A16] dark:text-[#FFFDF7] text-2xl" data-icon="shopping_bag">shopping_bag</span>
+                    </button>
+                </header>
+            );
+        };
+
+        const BottomNav = ({ active = "MENU" }) => {
+            const navigate = useNavigate();
+            const navItems = [
+                { id: "MENU", icon: "restaurant_menu", label: "MENU", path: "/" },
+                { id: "BUILD", icon: "layers", label: "BUILD", path: "/build-base" },
+                { id: "CART", icon: "shopping_cart", label: "CART", path: "/cart" },
+                { id: "PROFILE", icon: "person", label: "PROFILE", path: "/profile" },
+            ];
+
+            return (
+                <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-2 bg-[#FFD166] border-t-[3px] border-[#211A16] shadow-[0_-4px_0_0_#211A16]">
+                    {navItems.map((item) => {
+                        const isActive = active === item.id;
+                        return (
+                            <div
+                                key={item.id}
+                                onClick={() => navigate(item.path)}
+                                className={`flex flex-col items-center justify-center cursor-pointer transition-all active:scale-95 ${isActive ? 'bg-[#00E5FF] text-[#211A16] border-[2px] border-[#211A16] rotate-[-2deg] px-4 py-1 shadow-[2px_2px_0px_#211A16]' : 'text-[#211A16] dark:text-[#FFFDF7] opacity-80 hover:bg-[#ef5b06] hover:text-white'}`}
+                            >
+                                <span className="material-symbols-outlined" data-icon={item.icon}>{item.icon}</span>
+                                <span className="font-headline font-bold text-[10px] uppercase">{item.label}</span>
+                            </div>
+                        );
+                    })}
+                </nav>
+            );
+        };
+
+        // --- Screen Components ---
+
+        const HomePage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="min-h-screen pb-32">
+                    <TopAppBar />
+                    <main className="pt-24 px-4 max-w-5xl mx-auto">
+                        <section className="mb-8">
+                            <div 
+                                className="relative bg-primary border-[3px] border-outline brutal-shadow p-6 overflow-hidden group cursor-pointer"
+                                onClick={() => navigate('/build-base')}
+                            >
+                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary opacity-20 rounded-full"></div>
+                                <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                                    <div className="flex-1">
+                                        <span className="inline-block bg-secondary text-on-secondary px-3 py-1 font-label font-bold text-xs uppercase mb-3 border-2 border-outline rotated-label brutal-shadow-sm">
+                                            Custom Creation
+                                        </span>
+                                        <h2 className="font-headline font-bold text-4xl text-white uppercase leading-none mb-4 tracking-tighter">
+                                            BUILD YOUR <br/>OWN TACO
+                                        </h2>
+                                        <p className="text-white/90 font-body mb-6 max-w-xs">
+                                            Choose your protein, salsa, and crunch. No rules, just flavor.
+                                        </p>
+                                        <button className="bg-surface-bright text-on-surface font-headline font-bold uppercase py-3 px-8 border-[3px] border-outline brutal-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:translate-x-[4px] active:translate-y-[4px]">
+                                            START BUILDING
+                                        </button>
+                                    </div>
+                                    <div className="w-full md:w-1/2 flex justify-center">
+                                        <img alt="Gourmet Taco" className="w-48 h-48 md:w-64 md:h-64 object-cover border-[3px] border-outline rounded-full brutal-shadow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGJvDV-Xvj_Tfeww5T-zKcZnvQ2dpEmusGO5l3lBzl7jbFs9Q3776khIlKnrX8RyROrSwDXU7frzhTLM2qU_YrLefpbj3JXSZJ85m3I14hzKPwUP0HFdqIbGxx0VU7dysDFQEbidfJXdV5gUY2qJ1Gr4PgR2s5AlYJf3F902N53Ssk7dgdtahV8wYlErympal4CA0xLT7Ey65WnZwRpSd0iwx6yndBakkZmJYXUram-LoNpSax9foQjrgNjY2Eyj6MTxWJktINA64"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="font-headline font-bold text-2xl uppercase tracking-tight text-on-background">Quick Bites</h3>
+                            <div className="h-[3px] flex-grow mx-4 bg-outline hidden sm:block"></div>
+                            <span className="font-label text-xs font-bold uppercase text-primary">View All</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                            {[
+                                { name: "Tikka Taco", price: "$5.50", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuD96K-LW9ZggpCqOkXqCWW8zmLYIn8kpQ0EDr2r18ZPK4wYMY01sba8g4DCBSOvFh_4JbAUFBynmDfxZO945QiNe1UvQSjpF8lSXaJ5jcs-ZW3rr7xooZY7xZna5nB0QK5PYBZQ4qXVRWqVafGRfWeIgWR589X0MucXiEgx7Gb9z1Tmj4-8WlvbJzmqXjDqjzTby3NBpSR8SBoJwwZdHdh4BVNZEMedn9tZO7n8T8P-NItH-i0yv4aYxWTcAWUGCldOT0qPCKjxt5Y" },
+                                { name: "Paneer Wrap", price: "$8.25", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCA-FLLU7m5zpzrijtQPalmb1Q1WHEDnhrEZu8Fv5pfZX17dxMGYU3wtTljEyjn7u-la__IkiEw5Zfw6PGUvgJw4v3No9E2WBuDmO61Sd-JPXz9Xue6XwgOogE71A6tErqHppESyCkEjwma8qV6hMsggS-vDJwJ3Mvh5ezeXNnekTv_uFBeK9ep9jwXKc2_Cgs-i94eNNTjX78TAWVgDEaPx7eMVQlUTNSBpoWDKcmp5dgIlACfSbCpP3GT_XQd4eXc1GrAPodIUv4" },
+                                { name: "Masala Fries", price: "$4.00", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCqf9mytdOJtqf3E-PfPOW7IncJ_yJsjKbeaClrJc0rJ9B-kJyrZzqhqAiGzGcyW9sFt51u3qjeFUNQzd1xkRbxPoWxnvobwnzKHUqCB-akjZ1O83ZhW_X2dAKsb7t5zAJCBvXe1-xks_KOE9VQRmjhsC208aSA8hbWBKLnU3hML-71b2ZNPuZva3rXaw-x8mqlqYza1fRjUYsEIAOPCvV5bl5sGqDVTeW27CKQJ_ylro83fJ1EjtYqDAXxWxwKkPfVCb5r58lruyI" },
+                                { name: "Mango Lassi", price: "$3.50", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCZPx7x66yPkqSbnCb5F-1D7PlFrGxYJ9fO2Pwd8ng_AwMX6pdaiBrFeqNhUAgLYa4pDv6TelrQPkRpy7vg-QHRTbfPUqnL_DP59K7Ju-4Anw9ySuURPBj1yR8Ii7jdTZFW3cWoHzo3UVk6tbs4l3Mz5qlrz2ujVJCjy1YhQdQdtRiOMJfpnmLFHCYYKMoQe2NjIbmo-i7UuKiYFjS2PGdIvbW-y12qY3Rp43g0aqZx3IvN7TO0fMjoJVFmwWtSK0h73AfN-YeRBxI" }
+                            ].map((item, idx) => (
+                                <div key={idx} className="bg-surface-bright border-[3px] border-outline brutal-shadow flex flex-col">
+                                    <div className="h-32 md:h-40 border-b-[3px] border-outline overflow-hidden">
+                                        <img alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src={item.img}/>
+                                    </div>
+                                    <div className="p-3 md:p-4 flex flex-col flex-grow">
+                                        <h4 className="font-headline font-bold text-base uppercase leading-tight mb-1">{item.name}</h4>
+                                        <span className="font-body text-sm font-bold text-primary mb-3">{item.price}</span>
+                                        <div className="mt-auto flex justify-end">
+                                            <button className="bg-secondary p-2 border-2 border-outline brutal-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
+                                                <span className="material-symbols-outlined text-on-secondary font-bold" data-icon="add">add</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <section className="mt-12 text-center">
+                            <div className="inline-block border-[3px] border-outline bg-surface-bright p-4 brutal-shadow rotated-label">
+                                <p className="font-headline font-bold text-xl uppercase tracking-tighter">
+                                    Tacos with a <span className="text-primary">Desi Soul</span>
+                                </p>
+                            </div>
+                        </section>
+                    </main>
+                    <BottomNav active="MENU" />
+                </div>
+            );
+        };
+
+        const BuildBasePage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="min-h-screen pb-40">
+                    <TopAppBar />
+                    <main className="pt-24 px-6 max-w-2xl mx-auto">
+                        <div className="mb-10">
+                            <div className="flex justify-between items-end mb-4">
+                                <span className="font-headline font-bold text-sm tracking-widest uppercase">Step 01/03</span>
+                                <span className="font-headline font-bold text-xs bg-secondary text-on-secondary px-3 py-1 border-2 border-outline rotate-[-2deg] neo-shadow-sm uppercase">Selection: BASE</span>
+                            </div>
+                            <div className="flex gap-2 h-4 border-[3px] border-outline bg-surface-container-low p-1 neo-shadow-sm">
+                                <div className="flex-1 bg-secondary border-r-[2px] border-outline"></div>
+                                <div className="flex-1 bg-surface-dim opacity-30 border-r-[2px] border-outline"></div>
+                                <div className="flex-1 bg-surface-dim opacity-30"></div>
+                            </div>
+                        </div>
+
+                        <div className="mb-8 relative">
+                            <h2 className="font-headline font-bold text-4xl uppercase leading-none tracking-tighter">
+                                PICK YOUR <br/>
+                                <span className="text-primary italic">BASE</span>
+                            </h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="group relative bg-secondary border-[3px] border-outline neo-shadow transition-all active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">
+                                <div className="flex flex-col md:flex-row">
+                                    <div className="w-full md:w-32 h-32 border-b-[3px] md:border-b-0 md:border-r-[3px] border-outline overflow-hidden">
+                                        <img alt="Traditional corn tortillas" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDLLdxiPuEQXZWWdRaM3OL4dSwFRaqUGjiOK2Nn19eyNUdCFduxnVmEBTWMv9W6xszzMSJHWdaHjEGV7qcQG4pCEDDEsmiZ4RmbzqUR7sLXGGGzDi7qWYPFQ1W7bFEZIqXhHpleaZjgD83m_ZwZ1EFbHHKKb7Jifai3IXh17Bg8nxo3OgJoCQjM7FQGoqbJ8OIZv-kww39rF5pFTA_4V-00GoEo1-_kgj8Rpaghx9sHpDv8VUBGLzUEPFPDyZWfxG2nVVU8c3Z3ZY"/>
+                                    </div>
+                                    <div className="p-4 flex-1 flex flex-col justify-center">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h3 className="font-headline font-bold text-xl uppercase italic">Classic Wheat</h3>
+                                            <span className="bg-outline text-surface px-2 py-0.5 text-[10px] font-bold uppercase rotate-[3deg]">POPULAR</span>
+                                        </div>
+                                        <p className="font-body text-sm leading-tight text-on-secondary">Traditional artisan wheat dough, hand-stretched and fired for a nutty, complex flavor.</p>
+                                    </div>
+                                    <div className="absolute -right-3 -top-3 w-10 h-10 bg-outline border-2 border-surface-bright flex items-center justify-center rotate-[15deg]">
+                                        <span className="material-symbols-outlined text-surface text-2xl" style={{fontVariationSettings: "'FILL' 1"}}>check</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="group relative bg-surface-bright border-[3px] border-outline neo-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
+                                <div className="flex flex-col md:flex-row">
+                                    <div className="w-full md:w-32 h-32 border-b-[3px] md:border-b-0 md:border-r-[3px] border-outline overflow-hidden">
+                                        <img alt="Fresh white flour tortillas" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEdfpia2mVCvefvgcocYQ9oNdHd0tDrrzJtT10WWRdmiyoen-I9qohEQq7bXVi8vBxWPX9xvWR7tTswELQdRC0LWg_PzLCVZpcKfS3nkdWgamWMSbI6T5oSQa04wlINdOOlkST9cJ6pcO17_Ejp28-qvNs40sY2FGO7-v5CNuZqrJZi9G_JfdxqSdjLJtIM58AiJETSFdPDVOFUZ3Oc3yJkh3zRAk4gorA_P2fpmc1Y0T21aZ5UKyx1R7xBfKQfBNkrnyocAu3S2M"/>
+                                    </div>
+                                    <div className="p-4 flex-1 flex flex-col justify-center">
+                                        <h3 className="font-headline font-bold text-xl uppercase italic mb-1">White Flour</h3>
+                                        <p className="font-body text-sm leading-tight text-on-surface-variant">Ultra-soft, buttery, and flexible. The perfect canvas for bold, spicy fillings.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-12 flex justify-center">
+                            <div className="bg-outline text-surface-bright p-4 border-[3px] border-primary rotate-[-1deg] neo-shadow">
+                                <p className="font-headline font-bold text-xs uppercase tracking-widest text-center">Pro Tip: Street Corn pairs best <br/> with Slow-Cooked Birria!</p>
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer className="fixed bottom-20 left-0 w-full z-40 px-6 py-4 pointer-events-none">
+                        <div className="max-w-2xl mx-auto flex justify-end">
+                            <button 
+                                onClick={() => navigate('/build-protein')}
+                                className="pointer-events-auto flex items-center justify-between bg-primary text-on-primary font-headline font-bold text-lg px-8 py-4 border-[3px] border-outline neo-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:scale-95 uppercase tracking-tighter"
+                            >
+                                NEXT: PROTEIN
+                                <span className="material-symbols-outlined font-bold ml-2">arrow_forward</span>
+                            </button>
+                        </div>
+                    </footer>
+                    <BottomNav active="BUILD" />
+                </div>
+            );
+        };
+
+        const BuildProteinPage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="min-h-screen pb-40">
+                    <TopAppBar showBack={true} backTo="/build-base" />
+                    <main className="pt-24 px-6 max-w-2xl mx-auto min-h-screen">
+                        <div className="mb-10">
+                            <div className="flex gap-2 h-4 mb-4">
+                                <div className="flex-1 bg-secondary border-[3px] border-outline"></div>
+                                <div className="flex-1 bg-secondary border-[3px] border-outline"></div>
+                                <div className="flex-1 bg-surface-container-low border-[3px] border-outline opacity-40"></div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-headline font-bold text-xs uppercase tracking-wider text-on-background">Step 2: Protein</span>
+                                <span className="font-headline font-bold text-xs uppercase tracking-wider text-on-background">66% Complete</span>
+                            </div>
+                        </div>
+
+                        <div className="mb-8 relative">
+                            <div className="absolute -top-4 -left-2 bg-secondary text-on-secondary px-3 py-1 font-headline font-bold text-[10px] uppercase border-[2px] border-outline -rotate-3 z-10 neo-brutal-shadow-sm">
+                                Custom Build
+                            </div>
+                            <h2 className="text-4xl font-display uppercase leading-none tracking-tight text-on-background">
+                                CHOOSE <br/>
+                                <span className="text-primary italic">PROTEIN</span>
+                            </h2>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="group relative flex items-center bg-secondary border-[3px] border-outline p-1 neo-brutal-shadow -rotate-1 transition-all">
+                                <div className="w-24 h-24 bg-surface-bright border-r-[3px] border-outline overflow-hidden">
+                                    <img alt="Chicken" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3WWZYiXYIdP0e9fizyewA_8XeZzNcHvhT9IW-rYNK63cWppvg_WBf5i926eXpTJ5NTug4bXq5QLfMBrTCYMGRz4krvymiJhNzvalYcq871cSLLliouyuulXeXnEfz9SjYOi6gju6QUZ2hLhciAIYoyNJFhuP9F7vfews8iBUoK537oHNMCuBse-rtiDRMFQUhwmzK1SSupDF2kM4GM5XZnnAZYRzMUASR2pVtFrScjLP6fHRyRkcXGp1i4uJWIK7GYk49rfxZhCM"/>
+                                </div>
+                                <div className="flex-1 px-4 py-2">
+                                    <h3 className="font-headline font-bold text-xl uppercase text-on-background">Chicken</h3>
+                                    <p className="text-xs font-semibold text-on-background opacity-80 leading-tight">Citrus-marinated flame-grilled breast</p>
+                                </div>
+                                <div className="pr-4">
+                                    <div className="w-8 h-8 rounded-full border-[3px] border-outline bg-surface-bright flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-primary font-bold" style={{fontVariationSettings: "'FILL' 0, 'wght' 700"}}>check</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {[
+                                { name: "Pork", desc: "12-hour slow braised carnitas", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDGCuP_W5_EvJqg8sOSgEOTzUTeSPw2hQLqA4LVnSWeIOmorrwyDOSSB3I1TdtxHEG4aLDICzg8AQeQ3-QpSSLkmFhGa44_NdHbBdM5WT0tghBG1jwBuqnhdr_VZ33G9_R_-EUnw6M4df_QTlfLRS6cxpy7JwMISfo44CokLUGzG0rr37gF17pa6lmnofl5AEBd_0_mSSVEByfsXhFXugpbfRtFnmz85IqI6wDCPOg8la0e5D4wsW1-UhKI18IoD1fdpCj9RrlhB4I" },
+                                { name: "Beef", desc: "Chili-rubbed premium steak strips", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBBukQoahusSMprgZDyflvTwuqIVHmLrzDmC3jwAT6pCcZZAMBcUW134fyVs_w_8fYJyJKhDdjaJmXQ076Ke2bldQNj-jKYyOMJHEGUNVH-7H8v2pLqyzySOiBgDYn3jx2NiD4QafaFVktgWJTY6I_bj9NYxNpwO9nxcnpGy57Hn5_Nafi-lvx8rVQCGa-RIKrUh7Wx1Pit1qYFRfNZe7X0k-l-aenz4ApOb7g-LJ3UOnWlfyfs5AcrTqT3dW_E4fm8N2RA0saaZE" },
+                                { name: "Paneer", desc: "Spiced and seared artisan cheese", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBnA8frDyyKdq4T9Cvb1V1gw-i9yV9a3zVOgRySDHr5bwPpzc7kQwRKZpDIF-HcTLfdDPfIyYDasHhDJEhhonyMaybzGtAPju1YqTVBXF0g16LMq4NljRPit2zC2nzYve6AdMUEyepLNswB995PbCDkvpQNLBbDY6W4Fu4useveqxgbpPd6SsWFTfIU8o2gXqeMr0r9cbxGbqOA36UUaKFIld5LpHHFhJWJ0WhqoFpViGxCRO3nVpR0pkoNPh5eh8VkAQSJHHebw18" }
+                            ].map((item, idx) => (
+                                <div key={idx} className="group relative flex items-center bg-surface-container-low border-[3px] border-outline p-1 neo-brutal-shadow hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer">
+                                    <div className="w-24 h-24 bg-surface-bright border-r-[3px] border-outline overflow-hidden">
+                                        <img alt={item.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" src={item.img}/>
+                                    </div>
+                                    <div className="flex-1 px-4 py-2">
+                                        <h3 className="font-headline font-bold text-xl uppercase text-on-background">{item.name}</h3>
+                                        <p className="text-xs font-semibold text-on-background opacity-80 leading-tight">{item.desc}</p>
+                                    </div>
+                                    <div className="pr-4">
+                                        <div className="w-8 h-8 rounded-full border-[3px] border-outline bg-surface-container-low group-hover:bg-secondary-fixed transition-colors"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-8 p-4 bg-tertiary-container border-[3px] border-outline neo-brutal-shadow-sm flex items-start gap-4">
+                            <span className="material-symbols-outlined text-on-tertiary-container mt-1" data-icon="info">info</span>
+                            <p className="text-sm font-semibold text-on-tertiary-container leading-tight">
+                                All our proteins are sourced from local farms and prepared fresh daily in our urban cantina. No shortcuts.
+                            </p>
+                        </div>
+                    </main>
+
+                    <footer className="fixed bottom-20 left-0 w-full z-40 px-6 pb-6 pointer-events-none">
+                        <button 
+                            onClick={() => navigate('/build-sauce')}
+                            className="pointer-events-auto w-full bg-primary text-on-primary py-5 border-[3px] border-outline neo-brutal-shadow flex justify-between items-center px-6 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:scale-[0.98] group"
+                        >
+                            <span className="font-headline font-bold text-2xl uppercase tracking-tighter">NEXT: SAUCE</span>
+                            <span className="material-symbols-outlined text-3xl group-hover:translate-x-2 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+                        </button>
+                    </footer>
+                    <BottomNav active="BUILD" />
+                </div>
+            );
+        };
+
+        const BuildSaucePage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="min-h-screen pb-40">
+                    <TopAppBar showBack={true} backTo="/build-protein" />
+                    <main className="pt-24 px-6 max-w-2xl mx-auto">
+                        <div className="flex gap-2 mb-8">
+                            <div className="h-4 flex-1 bg-secondary border-[3px] border-outline shadow-[2px_2px_0px_#211A16]"></div>
+                            <div className="h-4 flex-1 bg-secondary border-[3px] border-outline shadow-[2px_2px_0px_#211A16]"></div>
+                            <div className="h-4 flex-1 bg-secondary border-[3px] border-outline shadow-[2px_2px_0px_#211A16]"></div>
+                        </div>
+
+                        <div className="mb-8 relative">
+                            <h1 className="font-headline font-bold text-4xl uppercase tracking-tighter leading-none border-l-[8px] border-primary pl-4">
+                                SAUCE IT UP
+                            </h1>
+                            <div className="absolute -right-2 -top-4 bg-secondary text-on-secondary px-3 py-1 font-headline font-bold text-xs border-[2px] border-outline rotate-[5deg] shadow-[2px_2px_0px_#211A16]">
+                                STEP 03
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-6">
+                            {[
+                                { name: "Tikka Masala", desc: "Creamy, tomato-based classic with a hint of smoky flavor.", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuD-wWQQzwHhte1nh4L56Qe1ap1SX6SURTpuUiqqO-RWb1LQZe9u3nOrGsFB8940tD3LNkuAc9Ww_Ul_V9XU7TY8ojRKMgfyNXh3Y58WpsdKFZNbIG1u_Z0gs3eLFLT6fpgc3EjWi02lkbsBegGl0K7TytSH4W5AQUlaTz_PudeGmIgo_HHA_3qielBakAYCDIzkLgefgw8LJgfduUAA9AsOXthj3UEqzb1cBZxUDnzehi9hnjDAUzduoWeVAY-xDBveRda4sA6ZIhc", checked: false },
+                                { name: "Chettinad Heat", desc: "Bold, spicy, and packed with roasted peppercorns and curry leaves.", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBWmlV3EE0jzjwJWnX9x7Xzm_-5IkQ8d99XXwQeUXn7kJS7oXh4-3fxwi5HYVTcxuYV-4a8tgkaRXWw94beYF6frZOf5k8vw5MYJsCZzHtcYftWZuniPzIyIhvwpIHFO19Q6D2t_VaG_tdLHQoID-sTw56fRFkv1-A42ZJzRN12IoYtUBGpATxPnHQ1X54-t6Xgx3E8m_F-lx8srmXC6RpU7DckgxX05xJ2oLNGQwPTW5FlxwcDUkmGBwOw8ffkDNS45AC2Jf92Qvo", checked: true, spicy: true },
+                                { name: "Butter Masala", desc: "Velvety smooth and mild. Rich butter with aromatic spices.", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDc_Td7OYdK_V1trTcJjPvQ0Jht2bxySH-3NuhK1JaxhSJIn6-xK1S4HV_PqpiU1SzfMAnq19T7JlasX3tw1zL0sl_rG5QffBVcyle_06Rwd_HnPOplhOpfR5EDl9yTW7gehY65RAXI5FQ24m3h3eU7_4TTheoKwoQz-vji8VeBXdn5kbuvjeDFs-zlF7-uQZ8WINAUU8lm3r_tJTvzFwqUZpC1NL-Fq2j2y3Ybd_a1JREKobdtl-gon8woRpbfjVZlxxnhzG4uv5o", checked: false }
+                            ].map((sauce, idx) => (
+                                <label key={idx} className="group relative cursor-pointer">
+                                    <input className="sr-only peer" name="sauce" type="radio" defaultChecked={sauce.checked}/>
+                                    <div className="flex items-center gap-4 bg-surface-bright p-4 border-[3px] border-outline shadow-[4px_4px_0px_#211A16] transition-all group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-[2px_2px_0px_#211A16] peer-checked:bg-secondary peer-checked:translate-x-[4px] peer-checked:translate-y-[4px] peer-checked:shadow-none">
+                                        <div className={`w-20 h-20 shrink-0 border-[3px] border-outline overflow-hidden bg-primary ${idx % 2 === 0 ? 'rotate-[-2deg]' : 'rotate-[3deg]'}`}>
+                                            <img alt={sauce.name} className="w-full h-full object-cover" src={sauce.img}/>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <div className="font-headline font-bold text-xl uppercase tracking-tight">{sauce.name}</div>
+                                                {sauce.spicy && (
+                                                    <div className="flex text-primary">
+                                                        <span className="material-symbols-outlined text-lg" style={{fontVariationSettings: "'FILL' 1"}}>cooking</span>
+                                                        <span className="material-symbols-outlined text-lg" style={{fontVariationSettings: "'FILL' 1"}}>cooking</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="text-sm font-body opacity-80">{sauce.desc}</div>
+                                        </div>
+                                        <div className="material-symbols-outlined opacity-0 peer-checked:opacity-100 transition-opacity text-on-secondary" data-icon="check_circle">check_circle</div>
+                                    </div>
+                                    {sauce.spicy && <div className="absolute -top-2 -right-2 bg-primary text-white px-2 py-0.5 text-[10px] font-bold border-[2px] border-outline rotate-[8deg] z-10">SPICY!</div>}
+                                </label>
+                            ))}
+                        </div>
+
+                        <div className="mt-12 p-6 border-[3px] border-outline bg-[#D9B455] relative overflow-hidden">
+                            <div className="relative z-10">
+                                <h3 className="font-headline font-bold uppercase text-lg mb-2">Pro Tip: Spice Levels</h3>
+                                <p className="text-sm font-body">Our Chettinad Heat is authentic South Indian style. If you can't handle the flame, stick to Tikka!</p>
+                            </div>
+                            <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-[-15deg]">local_fire_department</span>
+                        </div>
+                    </main>
+
+                    <div className="fixed bottom-20 left-0 w-full p-4 z-40">
+                        <button 
+                            onClick={() => navigate('/cart')}
+                            className="w-full bg-primary text-on-primary py-5 px-6 border-[3px] border-outline shadow-[6px_6px_0px_#211A16] font-headline font-bold text-xl uppercase tracking-widest flex justify-between items-center transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#211A16] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none"
+                        >
+                            <span>ADD TO CART</span>
+                            <span className="bg-outline text-surface px-3 py-1 text-lg">$9.00</span>
+                        </button>
+                    </div>
+                    <BottomNav active="BUILD" />
+                </div>
+            );
+        };
+
+        const CartPage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="min-h-screen pb-40">
+                    <TopAppBar />
+                    <main className="pt-24 px-4 max-w-2xl mx-auto">
+                        <div className="mb-8 rotate-[-1deg] inline-block bg-primary px-6 py-2 border-[3px] border-outline brutal-shadow">
+                            <h2 className="font-headline font-bold text-3xl uppercase text-white tracking-tighter">YOUR CART</h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="bg-surface-bright border-[3px] border-outline brutal-shadow overflow-hidden">
+                                <div className="flex flex-col sm:flex-row">
+                                    <div className="w-full sm:w-1/3 h-48 sm:h-auto bg-secondary-container border-b-[3px] sm:border-b-0 sm:border-r-[3px] border-outline relative overflow-hidden">
+                                        <img alt="Custom wrap" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9q-RbZA9h_nvRD512a2CgKSWD0t0uPa4pr5HWR60JQsAMirjvjRdDPLby_6MAI7_cRJeGcHF142fS3Ddr6I6wXrfUTpMJyCVFwczdksu-hMcLhVhEQNJ5kgXpa3mVEdhNOgk4PHzGeAaoMm6RJC6lRD01dzikDQuKBpWDpRzPlaO1p9n8H3gcySUvPfOygYol3zyALgwpvNBSgjY9xC2XL6dr386f54MRs-Hsu3ds3BVWRBc9FV582xrKSCK9pl7C7XORSHTQ6yA"/>
+                                        <div className="absolute top-2 left-2 bg-secondary border-[2px] border-outline px-2 py-0.5 rotate-[-3deg] text-[10px] font-bold brutal-shadow-sm uppercase">FRESH MADE</div>
+                                    </div>
+                                    <div className="p-4 flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h3 className="font-headline font-bold text-xl uppercase leading-tight">Custom Wrap</h3>
+                                                <span className="font-headline font-bold text-lg">$14.50</span>
+                                            </div>
+                                            <p className="text-sm text-on-surface-variant font-medium mb-4">
+                                                Corn, Paneer, Tikka Masala, Mint Chutney, Pickled Onions
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-4 mt-2">
+                                            <button onClick={() => navigate('/build-base')} className="text-xs font-bold uppercase underline decoration-primary decoration-2 underline-offset-4 hover:text-primary transition-colors">EDIT</button>
+                                            <button className="text-xs font-bold uppercase underline decoration-error decoration-2 underline-offset-4 hover:text-error transition-colors">REMOVE</button>
+                                            <div className="ml-auto flex items-center border-[2px] border-outline bg-white brutal-shadow-sm">
+                                                <button className="px-2 py-1 hover:bg-surface border-r-[2px] border-outline"><span className="material-symbols-outlined text-sm">remove</span></button>
+                                                <span className="px-3 font-bold text-sm">1</span>
+                                                <button className="px-2 py-1 hover:bg-surface border-l-[2px] border-outline"><span className="material-symbols-outlined text-sm">add</span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-secondary p-4 border-[3px] border-outline brutal-shadow flex flex-col justify-between aspect-square">
+                                    <span className="material-symbols-outlined text-3xl mb-2">local_drink</span>
+                                    <div>
+                                        <h4 className="font-headline font-bold text-sm uppercase">Add Mango Lassi</h4>
+                                        <button className="mt-2 bg-white text-[10px] font-extrabold px-3 py-1 border-[2px] border-outline brutal-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">+ $4.00</button>
+                                    </div>
+                                </div>
+                                <div className="bg-primary p-4 border-[3px] border-outline brutal-shadow flex flex-col justify-between aspect-square text-white">
+                                    <span className="material-symbols-outlined text-3xl mb-2">bakery_dining</span>
+                                    <div>
+                                        <h4 className="font-headline font-bold text-sm uppercase">Extra Naan Side</h4>
+                                        <button className="mt-2 bg-secondary text-on-secondary text-[10px] font-extrabold px-3 py-1 border-[2px] border-outline brutal-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">+ $2.50</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-12 bg-surface-bright border-[3px] border-outline brutal-shadow p-6 relative overflow-hidden">
+                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary rounded-full opacity-20 border-[3px] border-outline"></div>
+                            <h3 className="font-headline font-bold text-xl uppercase mb-6 relative z-10">ORDER SUMMARY</h3>
+                            <div className="space-y-3 relative z-10">
+                                <div className="flex justify-between items-center text-sm font-medium">
+                                    <span>Subtotal</span>
+                                    <span className="font-bold">$14.50</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm font-medium">
+                                    <span>Estimated Tax</span>
+                                    <span className="font-bold">$1.20</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm font-medium">
+                                    <span>Delivery Fee</span>
+                                    <span className="font-bold text-secondary-dim uppercase italic">Free</span>
+                                </div>
+                                <div className="border-t-[3px] border-outline pt-4 mt-4 flex justify-between items-center">
+                                    <span className="font-headline font-bold text-xl uppercase">TOTAL</span>
+                                    <span className="font-headline font-bold text-2xl">$15.70</span>
+                                </div>
+                            </div>
+                            <div className="mt-6 flex items-center gap-3 bg-secondary-container p-3 border-[2px] border-outline rotate-[1deg]">
+                                <span className="material-symbols-outlined">schedule</span>
+                                <p className="text-xs font-bold uppercase leading-tight">Arriving in approx. 25-35 minutes</p>
+                            </div>
+                        </div>
+                    </main>
+
+                    <div className="fixed bottom-20 left-0 w-full px-4 pb-4 z-40">
+                        <div className="max-w-2xl mx-auto">
+                            <button onClick={() => navigate('/checkout')} className="w-full bg-[#211A16] text-white py-5 border-[3px] border-[#211A16] brutal-shadow flex items-center justify-center gap-3 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:scale-[0.98]">
+                                <span className="material-symbols-outlined text-2xl">apple</span>
+                                <span className="font-headline font-extrabold text-xl tracking-tighter">PAY WITH APPLE PAY</span>
+                            </button>
+                        </div>
+                    </div>
+                    <BottomNav active="CART" />
+                </div>
+            );
+        };
+
+        const CheckoutPage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="min-h-screen pb-32">
+                    <TopAppBar showBack={true} backTo="/cart" />
+                    <main className="max-w-xl mx-auto px-6 py-24">
+                        <div className="mb-10 relative">
+                            <h2 className="font-display text-5xl uppercase text-on-background leading-none tracking-tight">CHECKOUT</h2>
+                            <div className="absolute -right-2 -top-4 bg-secondary border-[3px] border-outline p-1 -rotate-6 brutal-shadow">
+                                <span className="font-headline text-[10px] font-black uppercase px-2">ORDER #882</span>
+                            </div>
+                        </div>
+
+                        <section className="mb-12">
+                            <div className="flex items-center gap-2 mb-6">
+                                <span className="bg-primary text-white font-display text-xl w-8 h-8 flex items-center justify-center border-[3px] border-outline brutal-shadow">1</span>
+                                <h3 className="font-headline font-black text-2xl uppercase italic">YOUR DETAILS</h3>
+                            </div>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block font-headline font-bold text-sm uppercase mb-1 ml-1">Full Name</label>
+                                    <input className="w-full bg-surface-bright border-[3px] border-outline p-4 font-headline font-bold focus:ring-0 focus:outline-none placeholder:text-stone-300 brutal-shadow transition-all focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-none" placeholder="GIOVANNI ROSSI" type="text"/>
+                                </div>
+                                <div>
+                                    <label className="block font-headline font-bold text-sm uppercase mb-1 ml-1">Email Address</label>
+                                    <input className="w-full bg-surface-bright border-[3px] border-outline p-4 font-headline font-bold focus:ring-0 focus:outline-none placeholder:text-stone-300 brutal-shadow transition-all focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-none" placeholder="GIO@MAMASITA.COM" type="email"/>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="mb-12">
+                            <div className="flex items-center gap-2 mb-6">
+                                <span className="bg-primary text-white font-display text-xl w-8 h-8 flex items-center justify-center border-[3px] border-outline brutal-shadow">2</span>
+                                <h3 className="font-headline font-black text-2xl uppercase italic">PAYMENT METHOD</h3>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="bg-secondary border-[3px] border-outline p-5 brutal-shadow flex items-center justify-between -rotate-1 relative overflow-hidden group cursor-pointer">
+                                    <div className="flex items-center gap-4">
+                                        <span className="material-symbols-outlined text-4xl">apple</span>
+                                        <div>
+                                            <p className="font-headline font-black text-lg leading-tight uppercase">APPLE PAY</p>
+                                            <p className="font-body text-xs font-bold opacity-70">FAST & SECURE</p>
+                                        </div>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full border-[3px] border-outline bg-white flex items-center justify-center">
+                                        <div className="w-4 h-4 bg-primary border-[2px] border-outline"></div>
+                                    </div>
+                                </div>
+                                <div className="bg-surface-bright border-[3px] border-outline p-5 brutal-shadow flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer group">
+                                    <div className="flex items-center gap-4">
+                                        <span className="material-symbols-outlined text-4xl text-primary">credit_card</span>
+                                        <div>
+                                            <p className="font-headline font-black text-lg leading-tight uppercase">CREDIT CARD</p>
+                                            <p className="font-body text-xs font-bold text-stone-500 italic">VISA, MC, AMEX</p>
+                                        </div>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full border-[3px] border-outline bg-white flex items-center justify-center"></div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="bg-white border-[3px] border-outline p-6 brutal-shadow rotate-1 mb-8">
+                            <h4 className="font-headline font-black border-b-[3px] border-outline pb-2 mb-4 uppercase">ORDER SUMMARY</h4>
+                            <div className="space-y-2 font-body font-bold text-sm">
+                                <div className="flex justify-between"><span>Street Taco Trio (x1)</span><span>$12.50</span></div>
+                                <div className="flex justify-between"><span>Horchata Large (x1)</span><span>$3.20</span></div>
+                                <div className="flex justify-between text-primary mt-4 pt-2 border-t-[3px] border-dashed border-outline"><span>TAX</span><span>$0.00</span></div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <div className="fixed bottom-0 left-0 w-full p-6 bg-surface-bright/80 backdrop-blur-md border-t-[3px] border-outline z-[60]">
+                        <button onClick={() => navigate('/order-status')} className="w-full bg-[#ef5b06] text-white py-5 px-8 brutal-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-between group active:scale-[0.98]">
+                            <span className="font-display text-2xl uppercase tracking-wider">CONFIRM & PAY</span>
+                            <span className="font-display text-3xl">$15.70</span>
+                            <span className="material-symbols-outlined font-black text-3xl group-hover:translate-x-2 transition-transform">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const OrderStatusPage = () => {
+            return (
+                <div className="min-h-screen bg-background text-on-background font-body flex flex-col">
+                    <TopAppBar />
+                    <main className="flex-grow container mx-auto px-4 pt-24 pb-24 relative">
+                        <div className="absolute top-10 right-4 w-24 h-24 rounded-full bg-secondary/20 -z-10 blur-xl"></div>
+                        <div className="absolute bottom-40 left-0 w-32 h-32 rounded-full bg-primary/10 -z-10 blur-xl"></div>
+                        
+                        <div className="max-w-2xl mx-auto space-y-8">
+                            <section className="bg-surface-variant border-[3px] border-outline p-6 brutal-shadow relative overflow-hidden">
+                                <div className="absolute -top-4 -right-4 bg-primary text-white p-4 rotate-12 border-2 border-outline z-10">
+                                    <span className="font-display text-xl">#4021</span>
+                                </div>
+                                <div className="relative z-0 mb-6 border-b-[3px] border-outline -mx-6 -mt-6 aspect-video">
+                                    <img alt="Taco Food Truck" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfT1WFrzW5JIZZunKnQygMB3n3qVliFepY4Gp7wKOrqRXwTxVCoqgZ8MZj3qxaKqDDf0JNBbluKZCVCCRaTPqv7ZYvApLX0mhGRueZpySTkHpBIXbFOKN4w2ru1S1ZFp6YS1H9hRE71x1KhsA8IVgftvaZpBmLoyMPXdVsZmg35Kauoq55t_puLpnl4rPoHIm2SA93eyn3y9XEDx4rfOMeFGK7LkK2O2o6wsEYG5FaTbkSLei1LdbqihV9Qxkb8OZzASzhyDyLCak"/>
+                                </div>
+                                <div className="text-center space-y-2">
+                                    <h2 className="font-display text-5xl md:text-6xl text-primary uppercase tracking-normal leading-tight">WE'RE COOKING!</h2>
+                                    <p className="font-headline font-bold text-xl uppercase italic">Estimated wait: 5 minutes</p>
+                                </div>
+                                <div className="mt-8 space-y-4">
+                                    <div className="flex justify-between items-end">
+                                        <span className="font-headline font-black text-xs uppercase tracking-widest px-2 py-1 bg-on-background text-white">Progress</span>
+                                        <span className="font-display text-2xl text-secondary stroke-outline">75%</span>
+                                    </div>
+                                    <div className="h-10 w-full bg-on-background border-[3px] border-outline relative overflow-hidden">
+                                        <div className="h-full bg-secondary w-3/4 flex items-center justify-end px-4">
+                                            <span className="material-symbols-outlined text-on-secondary animate-pulse" style={{fontVariationSettings: "'FILL' 1"}}>restaurant</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between text-[10px] font-bold font-headline uppercase opacity-70">
+                                        <span>Received</span><span>Prepping</span><span className="text-primary">Cooking</span><span>Delivery</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-surface-variant border-[3px] border-outline p-4 brutal-shadow -rotate-1">
+                                    <h3 className="font-headline font-black border-b-2 border-outline mb-3 pb-1 uppercase">Your Order</h3>
+                                    <ul className="space-y-2 font-body text-sm font-semibold">
+                                        <li className="flex justify-between"><span>2x Al Pastor Tacos</span><span className="text-primary">$8.00</span></li>
+                                        <li className="flex justify-between"><span>1x Horchata Grande</span><span className="text-primary">$4.50</span></li>
+                                        <li className="flex justify-between border-t-2 border-outline pt-2 font-black"><span>Total</span><span>$12.50</span></li>
+                                    </ul>
+                                </div>
+                                <div className="bg-secondary border-[3px] border-outline p-4 brutal-shadow rotate-1">
+                                    <h3 className="font-headline font-black border-b-2 border-outline mb-3 pb-1 uppercase text-on-secondary">Pickup Location</h3>
+                                    <div className="space-y-2 text-on-secondary">
+                                        <p className="font-bold text-sm">Downtown Cantina - Lane 4</p>
+                                        <p className="text-xs">42nd Street & Broadway</p>
+                                        <button className="mt-2 w-full bg-on-background text-white font-headline font-bold text-xs py-2 border-2 border-outline brutal-shadow">VIEW MAP</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-6 bg-primary text-white p-6 border-[3px] border-outline brutal-shadow">
+                                <div className="w-16 h-16 rounded-full border-2 border-white overflow-hidden shrink-0 bg-secondary">
+                                    <img alt="Head Chef" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5PBjYzrS1BS11ie_RT5E0xbzHlEGjmpWdrH4wAjFUe-GeECzDF3hmpv-2P4Z0TNy-QLcv3ohmBv3FvNf8mr2szbBRk2Y7cJyqngw5PA8raOWJYzBu8bENlIacwiAprRHWCg86aMtclRH62e4sFg3jM3aBzPRxO0Tt2nIaAJqL8nvT1jS6e3HJ6tiA58Zzn77-PWu-GKnmkVkVx0_vyOQarJlH1pAC6pDxNA5M_1S4RspIv36UTBo_nqcvr4iTwe8c6schKHSmiZg"/>
+                                </div>
+                                <div className="space-y-1">
+                                    <h4 className="font-headline font-black uppercase text-sm italic">Chef Rico is on it!</h4>
+                                    <p className="text-xs font-medium leading-tight">"Your Al Pastor is hitting the grill right now. Smells incredible!"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                    <BottomNav active="ORDERS" />
+                </div>
+            );
+        };
+
+        const App = () => {
+            return (
+                <MemoryRouter>
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/build-base" element={<BuildBasePage />} />
+                        <Route path="/build-protein" element={<BuildProteinPage />} />
+                        <Route path="/build-sauce" element={<BuildSaucePage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
+                        <Route path="/order-status" element={<OrderStatusPage />} />
+                        <Route path="/profile" element={<div className="p-10 text-center"><TopAppBar showBack={true} backTo="/" /><h1 className="pt-24 font-headline text-2xl">Profile Page (Mock)</h1><BottomNav active="PROFILE" /></div>} />
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
+
+        const rootElement = document.getElementById("root");
+        const root = createRoot(rootElement);
+        root.render(<App />);
+    </script>
+</body>
+</html>
