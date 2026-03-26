@@ -55,26 +55,32 @@ insert into menu_items (name, description, price, category, image_url) values
   ('Custom Build', 'Build your own taco — base, protein & sauce',   9.00, 'custom_build', null)
 on conflict do nothing;
 
--- Enable Row Level Security (open read for menu, customer can only see their orders)
+-- Enable Row Level Security
 alter table menu_items enable row level security;
 alter table customers   enable row level security;
 alter table orders      enable row level security;
 alter table order_items enable row level security;
 
--- Public can read menu items
-create policy "Public can read menu" on menu_items for select using (true);
+-- Drop any old policies first (safe to run multiple times)
+drop policy if exists "Public can read menu"           on menu_items;
+drop policy if exists "Anyone can create customer"     on customers;
+drop policy if exists "Anyone can create order"        on orders;
+drop policy if exists "Anyone can read orders"         on orders;
+drop policy if exists "Anyone can create order items"  on order_items;
+drop policy if exists "Anyone can read order items"    on order_items;
 
--- Anyone can insert a customer (anonymous ordering)
-create policy "Anyone can create customer" on customers for insert with check (true);
+-- menu_items: anyone can read
+create policy "anon_read_menu"         on menu_items  for select to anon using (true);
 
--- Anyone can create an order
-create policy "Anyone can create order" on orders for insert with check (true);
+-- customers: anon can insert + read their own rows
+create policy "anon_insert_customers"  on customers   for insert to anon with check (true);
+create policy "anon_read_customers"    on customers   for select to anon using (true);
 
--- Anyone can read orders (needed for order status page)
-create policy "Anyone can read orders" on orders for select using (true);
+-- orders: anon can create + read
+create policy "anon_insert_orders"     on orders      for insert to anon with check (true);
+create policy "anon_read_orders"       on orders      for select to anon using (true);
 
--- Anyone can insert order items
-create policy "Anyone can create order items" on order_items for insert with check (true);
+-- order_items: anon can create + read
+create policy "anon_insert_order_items" on order_items for insert to anon with check (true);
+create policy "anon_read_order_items"  on order_items  for select to anon using (true);
 
--- Anyone can read order items
-create policy "Anyone can read order items" on order_items for select using (true);
